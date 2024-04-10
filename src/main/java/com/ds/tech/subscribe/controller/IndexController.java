@@ -31,13 +31,12 @@ public class IndexController {
     @Resource
     private ProxyConfig proxyConfig;
 
-    private final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(5, 10, 1, TimeUnit.SECONDS, new ArrayBlockingQueue<>(20));
+    private final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(24, 24, 1, TimeUnit.SECONDS, new ArrayBlockingQueue<>(96));
 
     @GetMapping
     public Clash index() throws InterruptedException {
         Clash clash = new Clash();
         clash.init();
-        // 24
         CountDownLatch countDownLatch = new CountDownLatch(24);
         clashmeta(proxyConfig.getClashmeta1(), proxyConfig.getClashmeta1s(), countDownLatch, clash);
         clashmeta(proxyConfig.getClashmeta2(), proxyConfig.getClashmeta2s(), countDownLatch, clash);
