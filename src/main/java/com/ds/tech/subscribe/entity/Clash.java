@@ -9,26 +9,25 @@ import java.util.Map;
 
 @Data
 public class Clash {
-    private String secret;
-    private int mixedPort;
     private boolean allowLan;
+    private int socksPort;
+    private int mixedPort;
+    private List<String> cfwBypass;
+    private Map<String, Object> dns;
+    private String externalController;
     private String logLevel;
-    private Dns dns;
+    private String mode;
     private List<Map<String, Object>> proxies;
+    private List<ProxyGroup> proxyGroups;
+    private Map<String, Object> ruleProviders;
+    private List<String> rules;
 
-    public void init() {
-        this.secret = "dongtaiwang.com";
-        this.mixedPort = 7890;
-        this.allowLan = true;
-        this.logLevel = "info";
-        Dns dns = new Dns();
-        dns.setEnabled(true);
-        dns.setNameserver(Arrays.asList("119.29.29.29", "223.5.5.5"));
-        FallbackFilter fallbackFilter = new FallbackFilter();
-        fallbackFilter.setGeoip(false);
-        fallbackFilter.setIpcidr(Arrays.asList("240.0.0.0/4", "0.0.0.0/32"));
-        dns.setFallbackFilter(fallbackFilter);
-        this.dns = dns;
-        this.proxies = new ArrayList<>();
+    public void reset() {
+        this.proxies = new ArrayList<>(30);
+        List<String> proxies = new ArrayList<>(32);
+        proxies.add("♻️ 自动选择");
+        proxies.add("DIRECT");
+        this.proxyGroups.getFirst().setProxies(proxies);
+        this.proxyGroups.getLast().setProxies(new ArrayList<>(30));
     }
 }

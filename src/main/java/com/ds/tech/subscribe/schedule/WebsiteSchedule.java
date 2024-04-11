@@ -12,9 +12,17 @@ public class WebsiteSchedule {
     private RestTemplate restTemplate;
     @Value("${DOMAIN:gai.cloudns.org}")
     private String domain;
+    @Value("${WARP_DOMAIN:grf.cloudns.org}")
+    private String warpDomain;
 
     @Scheduled(cron = "0 * * * * *")
     public void schedule() {
         restTemplate.getForObject("https://" + domain + "/test", String.class);
+
+    }
+
+    @Scheduled(cron = "30 * * * * *")
+    public void schedule1() {
+        restTemplate.getForObject("https://" + warpDomain, String.class);
     }
 }
