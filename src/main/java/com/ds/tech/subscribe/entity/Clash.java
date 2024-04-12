@@ -1,15 +1,17 @@
 package com.ds.tech.subscribe.entity;
 
 import lombok.Data;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 @Data
 public class Clash {
     private boolean allowLan;
+    private String secret;
+    private int port;
     private int socksPort;
     private int mixedPort;
     private List<String> cfwBypass;
@@ -29,5 +31,13 @@ public class Clash {
         proxies.add("DIRECT");
         this.proxyGroups.getFirst().setProxies(proxies);
         this.proxyGroups.getLast().setProxies(new ArrayList<>(30));
+    }
+
+    public void groupPadding() {
+        if (CollectionUtils.isEmpty(proxies)) {
+            return;
+        }
+        List<String> proxyNames = proxies.stream().map(proxy -> proxy.get("name").toString()).toList();
+        proxyGroups.forEach(proxyGroup -> proxyGroup.getProxies().addAll(proxyNames));
     }
 }

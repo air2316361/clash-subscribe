@@ -2,24 +2,25 @@ package com.ds.tech.subscribe.controller;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.ds.tech.subscribe.entity.Clash;
 import com.ds.tech.subscribe.config.ProxyConfig;
+import com.ds.tech.subscribe.entity.Clash;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @RestController
 public class IndexController {
@@ -37,8 +38,8 @@ public class IndexController {
 
     private final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(24, 24, 1, TimeUnit.SECONDS, new ArrayBlockingQueue<>(96));
 
-    @GetMapping
-    public Clash index() throws InterruptedException {
+    @GetMapping("/subscribe")
+    public Clash subscribe() throws InterruptedException {
         clashTemplate.reset();
         CountDownLatch countDownLatch = new CountDownLatch(24);
         clashmeta(proxyConfig.getClashmeta1(), proxyConfig.getClashmeta1s(), countDownLatch);
@@ -67,7 +68,6 @@ public class IndexController {
         clashmeta(proxyConfig.getQuick4(), proxyConfig.getQuick4s(), countDownLatch);
         countDownLatch.await();
         List<Map<String, Object>> proxies = clashTemplate.getProxies();
-        List<String> proxyNames = new ArrayList<>(proxies.size());
         proxies.sort((o1, o2) -> {
             int result = o1.get("server").toString().compareTo(o2.get("server").toString());
             return result == 0 ? Integer.parseInt(o1.get("port").toString()) - Integer.parseInt(o2.get("port").toString()) : result;
@@ -77,9 +77,8 @@ public class IndexController {
             ++index;
             String proxyName = "IP_" + index;
             proxy.put("name", proxyName);
-            proxyNames.add(proxyName);
         }
-        clashTemplate.getProxyGroups().forEach(proxyGroup -> proxyGroup.getProxies().addAll(proxyNames));
+        clashTemplate.groupPadding();
         return clashTemplate;
     }
 
@@ -99,8 +98,8 @@ public class IndexController {
         return clashTemplate;
     }
 
-    @GetMapping("/test")
-    public String test() {
+    @GetMapping
+    public String index() {
         return "Hello World!";
     }
 

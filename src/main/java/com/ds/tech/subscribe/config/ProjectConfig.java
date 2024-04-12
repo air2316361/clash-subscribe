@@ -85,6 +85,8 @@ public class ProjectConfig {
     public Clash clashTemplate(ObjectMapper objectMapper) throws JsonProcessingException {
         Clash clash = new Clash();
         clash.setAllowLan(true);
+        clash.setSecret("xiaobaihe");
+        clash.setPort(7897);
         clash.setSocksPort(7891);
         clash.setMixedPort(7890);
         clash.setCfwBypass(objectMapper.readValue("""

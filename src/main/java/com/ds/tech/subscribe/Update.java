@@ -16,7 +16,6 @@ public class Update {
     public static void main(String[] args) {
         System.out.println("PORT=8080");
         read("clashmeta");
-        read("xray");
         read("hysteria");
         read("singbox");
         read("hysteria2");

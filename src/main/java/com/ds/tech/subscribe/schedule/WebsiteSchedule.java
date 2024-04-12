@@ -17,7 +17,7 @@ public class WebsiteSchedule {
 
     @Scheduled(cron = "0 * * * * *")
     public void schedule() {
-        restTemplate.getForObject("https://" + domain + "/test", String.class);
+        restTemplate.getForObject("https://" + domain, String.class);
 
     }
 
