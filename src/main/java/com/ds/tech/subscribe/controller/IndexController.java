@@ -7,7 +7,9 @@ import com.ds.tech.subscribe.entity.Clash;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -83,13 +85,18 @@ public class IndexController {
     }
 
     @GetMapping("/warp")
-    public Clash warp() {
-        String s = restTemplate.getForObject("https://" + warpDomain + "/api/clash?best=true&randomName=false&proxyFormat=only_proxies&ipv6=false&key=xiaobaihe", String.class);
+    public Clash warp(HttpServletResponse response) {
+        String httpHeader = "subscription-userinfo";
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity("https://" + warpDomain + "/api/clash?best=true&randomName=false&proxyFormat=only_proxies&ipv6=false&key=xiaobaihe", String.class);
         Clash clash;
         try {
-            clash = objectMapper.readValue(s, Clash.class);
+            clash = objectMapper.readValue(responseEntity.getBody(), Clash.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
+        }
+        List<String> userInfo = responseEntity.getHeaders().get(httpHeader);
+        if (userInfo != null) {
+            userInfo.forEach(s -> response.addHeader(httpHeader, s));
         }
         clashTemplate.reset();
         clashTemplate.setProxies(clash.getProxies());
