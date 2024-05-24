@@ -3,7 +3,6 @@ package com.ds.tech.subscribe.controller;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.ds.tech.subscribe.config.ProxyConfig;
 import com.ds.tech.subscribe.entity.Clash;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @RestController
-public class IndexController {
+public class SubscribeController {
     private static final int THREAD_NUM = 24;
     private final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(THREAD_NUM, THREAD_NUM, 1, TimeUnit.SECONDS, new ArrayBlockingQueue<>(THREAD_NUM * 3));
 
@@ -49,7 +48,6 @@ public class IndexController {
     @PostConstruct
     private void init() {
         proxyJson = JSON.parseObject(proxyConfig.trim());
-        System.out.println(proxyJson);
     }
 
     @GetMapping("/subscribe")
@@ -111,11 +109,6 @@ public class IndexController {
         List<String> proxyNames = clash.getProxies().stream().map(proxy -> proxy.get("name").toString()).toList();
         clashTemplate.getProxyGroups().forEach(proxyGroup -> proxyGroup.getProxies().addAll(proxyNames));
         return clashTemplate;
-    }
-
-    @GetMapping
-    public String index() {
-        return "Hello World!";
     }
 
     private void request(Object o, CountDownLatch countDownLatch, Consumer<String> consumer) {
