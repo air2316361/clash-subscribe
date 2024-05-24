@@ -1,15 +1,18 @@
 package com.ds.tech.subscribe.controller;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.ds.tech.subscribe.config.ProxyConfig;
 import com.ds.tech.subscribe.entity.Clash;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -26,6 +29,8 @@ import java.util.function.Consumer;
 
 @RestController
 public class IndexController {
+    private static final int THREAD_NUM = 24;
+    private final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(THREAD_NUM, THREAD_NUM, 1, TimeUnit.SECONDS, new ArrayBlockingQueue<>(THREAD_NUM * 3));
 
     @Resource
     private ObjectMapper objectMapper;
@@ -33,41 +38,44 @@ public class IndexController {
     private RestTemplate restTemplate;
     @Resource(name = "clashTemplate")
     private Clash clashTemplate;
-    @Resource
-    private ProxyConfig proxyConfig;
-    @Value("${WARP_DOMAIN:grf.cloudns.org}")
+    @Value("${PROXY_CONFIG:{}}")
+    private String proxyConfig;
+    @Value("${WARP_DOMAIN:warp.grf.cloudns.org}")
     private String warpDomain;
+    @Value("${WARP_SECRET:xiaobaihe}")
+    private String warpSecret;
+    private JSONObject proxyJson;
 
-    private final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(24, 24, 1, TimeUnit.SECONDS, new ArrayBlockingQueue<>(96));
+    @PostConstruct
+    private void init() {
+        proxyJson = JSON.parseObject(proxyConfig.trim());
+        System.out.println(proxyJson);
+    }
 
     @GetMapping("/subscribe")
     public Clash subscribe() throws InterruptedException {
         clashTemplate.reset();
-        CountDownLatch countDownLatch = new CountDownLatch(24);
-        clashmeta(proxyConfig.getClashmeta1(), proxyConfig.getClashmeta1s(), countDownLatch);
-        clashmeta(proxyConfig.getClashmeta2(), proxyConfig.getClashmeta2s(), countDownLatch);
-        clashmeta(proxyConfig.getClashmeta3(), proxyConfig.getClashmeta3s(), countDownLatch);
-        clashmeta(proxyConfig.getClashmeta4(), proxyConfig.getClashmeta4s(), countDownLatch);
-        clashmeta(proxyConfig.getClashmeta5(), proxyConfig.getClashmeta5s(), countDownLatch);
-        clashmeta(proxyConfig.getClashmeta6(), proxyConfig.getClashmeta6s(), countDownLatch);
-        xray(proxyConfig.getXray1(), proxyConfig.getXray1s(), countDownLatch);
-        xray(proxyConfig.getXray2(), proxyConfig.getXray2s(), countDownLatch);
-        xray(proxyConfig.getXray3(), proxyConfig.getXray3s(), countDownLatch);
-        xray(proxyConfig.getXray4(), proxyConfig.getXray4s(), countDownLatch);
-        hysteria(proxyConfig.getHysteria1(), proxyConfig.getHysteria1s(), countDownLatch);
-        hysteria(proxyConfig.getHysteria2(), proxyConfig.getHysteria2s(), countDownLatch);
-        hysteria(proxyConfig.getHysteria3(), proxyConfig.getHysteria3s(), countDownLatch);
-        hysteria(proxyConfig.getHysteria4(), proxyConfig.getHysteria4s(), countDownLatch);
-        singbox(proxyConfig.getSingbox1(), proxyConfig.getSingbox1s(), countDownLatch);
-        singbox(proxyConfig.getSingbox2(), proxyConfig.getSingbox2s(), countDownLatch);
-        hysteria2(proxyConfig.getHysteria21(), proxyConfig.getHysteria21s(), countDownLatch);
-        hysteria2(proxyConfig.getHysteria22(), proxyConfig.getHysteria22s(), countDownLatch);
-        hysteria2(proxyConfig.getHysteria23(), proxyConfig.getHysteria23s(), countDownLatch);
-        hysteria2(proxyConfig.getHysteria24(), proxyConfig.getHysteria24s(), countDownLatch);
-        clashmeta(proxyConfig.getQuick1(), proxyConfig.getQuick1s(), countDownLatch);
-        clashmeta(proxyConfig.getQuick2(), proxyConfig.getQuick2s(), countDownLatch);
-        clashmeta(proxyConfig.getQuick3(), proxyConfig.getQuick3s(), countDownLatch);
-        clashmeta(proxyConfig.getQuick4(), proxyConfig.getQuick4s(), countDownLatch);
+        CountDownLatch countDownLatch = new CountDownLatch(THREAD_NUM);
+        proxyJson.forEach((key, value) -> {
+            JSONArray jsonArray = (JSONArray) value;
+            switch (key) {
+                case "clashmeta":
+                    jsonArray.forEach(urls -> clashmeta(urls, countDownLatch));
+                    break;
+                case "xray":
+                    jsonArray.forEach(urls -> xray(urls, countDownLatch));
+                    break;
+                case "hysteria":
+                    jsonArray.forEach(urls -> hysteria(urls, countDownLatch));
+                    break;
+                case "singbox":
+                    jsonArray.forEach(urls -> singbox(urls, countDownLatch));
+                    break;
+                case "hysteria2":
+                    jsonArray.forEach(urls -> hysteria2(urls, countDownLatch));
+                    break;
+            }
+        });
         countDownLatch.await();
         List<Map<String, Object>> proxies = clashTemplate.getProxies();
         proxies.sort((o1, o2) -> {
@@ -87,7 +95,7 @@ public class IndexController {
     @GetMapping("/warp")
     public Clash warp(HttpServletResponse response) {
         String httpHeader = "subscription-userinfo";
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity("https://" + warpDomain + "/api/clash?best=true&randomName=false&proxyFormat=only_proxies&ipv6=false&key=xiaobaihe", String.class);
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity("https://" + warpDomain + "/api/clash?best=true&randomName=false&proxyFormat=only_proxies&ipv6=false&key=" + warpSecret, String.class);
         Clash clash;
         try {
             clash = objectMapper.readValue(responseEntity.getBody(), Clash.class);
@@ -110,32 +118,36 @@ public class IndexController {
         return "Hello World!";
     }
 
-    private void request(String url, String spareUrl, CountDownLatch countDownLatch, Consumer<String> consumer) {
+    private void request(Object o, CountDownLatch countDownLatch, Consumer<String> consumer) {
+        if (!(o instanceof JSONArray urls)) {
+            return;
+        }
+        if (CollectionUtils.isEmpty(urls)) {
+            return;
+        }
         threadPoolExecutor.execute(() -> {
-            boolean retry = true;
             try {
-                String s = restTemplate.getForObject(url, String.class);
+                String s = restTemplate.getForObject(urls.getString(0), String.class);
                 if (s != null) {
                     consumer.accept(s);
-                    retry = false;
+                    return;
+                }
+                if (urls.size() < 2) {
+                    return;
+                }
+                s = restTemplate.getForObject(urls.getString(1), String.class);
+                if (s != null) {
+                    consumer.accept(s);
                 }
             } catch (Exception ignored) {
+            } finally {
+                countDownLatch.countDown();
             }
-            if (retry) {
-                try {
-                    String s = restTemplate.getForObject(spareUrl, String.class);
-                    if (s != null) {
-                        consumer.accept(s);
-                    }
-                } catch (Exception ignored) {
-                }
-            }
-            countDownLatch.countDown();
         });
     }
 
-    private void clashmeta(String url, String spareUrl, CountDownLatch countDownLatch) {
-        request(url, spareUrl, countDownLatch, s -> {
+    private void clashmeta(Object urls, CountDownLatch countDownLatch) {
+        request(urls, countDownLatch, s -> {
             try {
                 Clash clash = objectMapper.readValue(s, Clash.class);
                 clashTemplate.getProxies().addAll(clash.getProxies());
@@ -145,8 +157,8 @@ public class IndexController {
         });
     }
 
-    private void xray(String url, String spareUrl, CountDownLatch countDownLatch) {
-        request(url, spareUrl, countDownLatch, s -> {
+    private void xray(Object urls, CountDownLatch countDownLatch) {
+        request(urls, countDownLatch, s -> {
             JSONObject jsonObject = JSONObject.parseObject(s);
             JSONArray proxies = jsonObject.getJSONArray("outbounds");
             for (int i = 0; i < proxies.size(); ++i) {
@@ -189,8 +201,8 @@ public class IndexController {
         });
     }
 
-    private void hysteria(String url, String spareUrl, CountDownLatch countDownLatch) {
-        request(url, spareUrl, countDownLatch, s -> {
+    private void hysteria(Object urls, CountDownLatch countDownLatch) {
+        request(urls, countDownLatch, s -> {
             JSONObject proxy = JSONObject.parseObject(s);
             String[] server = proxy.getString("server").split(":");
             Map<String, Object> clashProxy = new HashMap<>();
@@ -210,8 +222,8 @@ public class IndexController {
         });
     }
 
-    private void singbox(String url, String spareUrl, CountDownLatch countDownLatch) {
-        request(url, spareUrl, countDownLatch, s -> {
+    private void singbox(Object urls, CountDownLatch countDownLatch) {
+        request(urls, countDownLatch, s -> {
             JSONObject jsonObject = JSONObject.parseObject(s);
             JSONArray outbounds = jsonObject.getJSONArray("outbounds");
             for (int i = 0; i < outbounds.size(); ++i) {
@@ -236,8 +248,8 @@ public class IndexController {
         });
     }
 
-    private void hysteria2(String url, String spareUrl, CountDownLatch countDownLatch) {
-        request(url, spareUrl, countDownLatch, s -> {
+    private void hysteria2(Object urls, CountDownLatch countDownLatch) {
+        request(urls, countDownLatch, s -> {
             JSONObject proxy = JSONObject.parseObject(s);
             String[] server = proxy.getString("server").split(":");
             Map<String, Object> clashProxy = new HashMap<>();

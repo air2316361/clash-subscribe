@@ -10,9 +10,9 @@ import org.springframework.web.client.RestTemplate;
 public class WebsiteSchedule {
     @Resource
     private RestTemplate restTemplate;
-    @Value("${DOMAIN:gai.cloudns.org}")
+    @Value("${DOMAIN:grf.cloudns.org}")
     private String domain;
-    @Value("${WARP_DOMAIN:grf.cloudns.org}")
+    @Value("${WARP_DOMAIN:warp.grf.cloudns.org}")
     private String warpDomain;
 
     @Scheduled(cron = "0 * * * * *")
