@@ -112,92 +112,26 @@ public class ProjectConfig {
                 - 192.168.*
                 - <local>""", listType));
         clash.setDns(objectMapper.readValue("""
-                default-nameserver:
-                - 223.5.5.5
-                - 119.29.29.29
                 enable: true
-                enhanced-mode: fake-ip
-                fake-ip-filter:
-                - '*.lan'
-                - '*.local'
-                - dns.msftncsi.com
-                - www.msftncsi.com
-                - www.msftconnecttest.com
-                - stun.*.*.*
-                - stun.*.*
-                - miwifi.com
-                - music.163.com
-                - '*.music.163.com'
-                - '*.126.net'
-                - api-jooxtt.sanook.com
-                - api.joox.com
-                - joox.com
-                - y.qq.com
-                - '*.y.qq.com'
-                - streamoc.music.tc.qq.com
-                - mobileoc.music.tc.qq.com
-                - isure.stream.qqmusic.qq.com
-                - dl.stream.qqmusic.qq.com
-                - aqqmusic.tc.qq.com
-                - amobile.music.tc.qq.com
-                - '*.xiami.com'
-                - '*.music.migu.cn'
-                - music.migu.cn
-                - netis.cc
-                - router.asus.com
-                - repeater.asus.com
-                - routerlogin.com
-                - routerlogin.net
-                - tendawifi.com
-                - tendawifi.net
-                - tplinklogin.net
-                - tplinkwifi.net
-                - tplinkrepeater.net
-                - '*.ntp.org.cn'
-                - '*.openwrt.pool.ntp.org'
-                - '*.msftconnecttest.com'
-                - '*.msftncsi.com'
-                - localhost.ptlogin2.qq.com
-                - '*.*.*.srv.nintendo.net'
-                - '*.*.stun.playstation.net'
-                - xbox.*.*.microsoft.com
-                - '*.ipv6.microsoft.com'
-                - '*.*.xboxlive.com'
-                - speedtest.cros.wr.pvp.net
-                fake-ip-range: 198.18.0.1/16
-                fallback:
-                - tls://101.101.101.101:853
-                - https://101.101.101.101/dns-query
-                - https://public.dns.iij.jp/dns-query
-                - https://208.67.220.220/dns-query
-                fallback-filter:
-                  domain:
-                  - +.google.com
-                  - +.facebook.com
-                  - +.twitter.com
-                  - +.youtube.com
-                  - +.xn--ngstr-lra8j.com
-                  - +.google.cn
-                  - +.googleapis.cn
-                  - +.googleapis.com
-                  - +.gvt1.com
-                  - +.paoluz.com
-                  - +.paoluz.link
-                  - +.paoluz.xyz
-                  - +.sodacity-funk.xyz
-                  - +.nloli.xyz
-                  - +.jsdelivr.net
-                  - +.proton.me
-                  geoip: true
-                  ipcidr:
-                  - 240.0.0.0/4
-                  - 0.0.0.0/32
-                  - 127.0.0.1/32
-                ipv6: true
+                ipv6: false
                 nameserver:
-                - tls://223.5.5.5:853
-                - https://223.6.6.6/dns-query
-                - https://120.53.53.53/dns-query""", mapType));
+                  - 1.1.1.1
+                  - 8.8.8.8
+                fallback:
+                  - 114.114.114.114
+                  - 223.5.5.5
+                fallback-filter:
+                geoip: true
+                geoip-code: CN
+                ipcidr:
+                  - 240.0.0.0/4
+                nameserver-policy:
+                "geosite:cn": [114.114.114.114, 223.5.5.5]
+                default-nameserver:
+                  - 1.1.1.1
+                  - 8.8.8.8
+                enhanced-mode: fake-ip
+                fake-ip-range: 198.18.0.1/16""", mapType));
         clash.setExternalController("127.0.0.1:9090");
         clash.setLogLevel("info");
         clash.setMode("Rule");
