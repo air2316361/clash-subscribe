@@ -55,6 +55,11 @@ public class SubscribeController {
         ObjectMapperHolder.setObjectMapper(objectMapper);
     }
 
+    @GetMapping
+    public String index() {
+        return "Welcome to clash subscribe server!";
+    }
+
     @GetMapping("/subscribe")
     public Clash subscribe() throws InterruptedException {
         clashTemplate.reset();
