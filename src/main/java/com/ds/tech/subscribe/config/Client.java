@@ -6,21 +6,20 @@ import com.ds.tech.subscribe.entity.Clash;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.AllArgsConstructor;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 @AllArgsConstructor
 public enum Client {
-    clashmeta((resp, proxies) -> {
+    clashmeta(resp -> {
         try {
-            Clash clash = ObjectMapperHolder.getObjectMapper().readValue(resp, Clash.class);
-            proxies.addAll(clash.getProxies());
+            return ObjectMapperHolder.getObjectMapper().readValue(resp, Clash.class).getProxies();
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }),
-    Xray((resp, p) -> {
+    Xray(resp -> {
+        List<Map<String, Object>> result = new ArrayList<>();
         JSONObject jsonObject = JSONObject.parseObject(resp);
         JSONArray proxies = jsonObject.getJSONArray("outbounds");
         for (int i = 0; i < proxies.size(); ++i) {
@@ -44,7 +43,7 @@ public enum Client {
                     clashProxy.put("skip-cert-verify", tlsSettings.get("allowInsecure"));
                     clashProxy.put("fingerprint", tlsSettings.get("fingerprint"));
                     clashProxy.put("ws-opts", streamSettings.get("wsSettings"));
-                    p.add(clashProxy);
+                    result.add(clashProxy);
                 }
             } else if ("shadowsocks".equals(protocol)) {
                 JSONArray servers = proxy.getJSONObject("settings").getJSONArray("servers");
@@ -56,18 +55,21 @@ public enum Client {
                     clashProxy.put("port", server.get("port"));
                     clashProxy.put("cipher", server.get("method"));
                     clashProxy.put("password", server.get("password"));
-                    p.add(clashProxy);
+                    result.add(clashProxy);
                 }
             }
         }
+        return result;
     }),
-    hysteria((resp, proxies) -> {
+    hysteria(resp -> {
         JSONObject proxy = JSONObject.parseObject(resp);
         String[] server = proxy.getString("server").split(":");
         Map<String, Object> clashProxy = new HashMap<>();
         clashProxy.put("type", "hysteria");
         clashProxy.put("server", server[0]);
-        clashProxy.put("port", Integer.parseInt(server[1]));
+        String[] portSplit = server[1].split(",");
+        clashProxy.put("port", portSplit[0]);
+        clashProxy.put("ports", portSplit[1]);
         clashProxy.put("auth-str", proxy.get("auth_str"));
         clashProxy.put("sni", proxy.get("server_name"));
         clashProxy.put("skip-cert-verify", proxy.get("disable_mtu_discovery"));
@@ -77,22 +79,25 @@ public enum Client {
         clashProxy.put("alpn", Collections.singletonList(proxy.get("alpn")));
         clashProxy.put("recv-window-conn", proxy.get("recv_window_conn"));
         clashProxy.put("recv-window", proxy.get("recv_window"));
-        proxies.add(clashProxy);
+        return Collections.singletonList(clashProxy);
     }),
-    hysteria2((resp, proxies) -> {
+    hysteria2(resp -> {
         JSONObject proxy = JSONObject.parseObject(resp);
         String[] server = proxy.getString("server").split(":");
         Map<String, Object> clashProxy = new HashMap<>();
         clashProxy.put("type", "hysteria2");
         clashProxy.put("server", server[0]);
-        clashProxy.put("port", Integer.parseInt(server[1]));
+        String[] portSplit = server[1].split(",");
+        clashProxy.put("port", portSplit[0]);
+        clashProxy.put("ports", portSplit[1]);
         clashProxy.put("password", proxy.get("auth"));
         JSONObject tls = proxy.getJSONObject("tls");
         clashProxy.put("sni", tls.get("sni"));
         clashProxy.put("skip-cert-verify", tls.get("insecure"));
-        proxies.add(clashProxy);
+        return Collections.singletonList(clashProxy);
     }),
-    singbox((resp, proxies) -> {
+    singbox(resp -> {
+        List<Map<String, Object>> proxies = new ArrayList<>();
         JSONObject jsonObject = JSONObject.parseObject(resp);
         JSONArray outbounds = jsonObject.getJSONArray("outbounds");
         for (int i = 0; i < outbounds.size(); ++i) {
@@ -114,7 +119,59 @@ public enum Client {
             clashProxy.put("zero-rtt-handshake", proxy.get("zero_rtt_handshake"));
             proxies.add(clashProxy);
         }
+        return proxies;
     });
+//    mieru(resp -> {
+//        List<Map<String, Object>> proxies = new ArrayList<>();
+//        JSONObject jsonObject = JSONObject.parseObject(resp);
+//        JSONArray profiles = jsonObject.getJSONArray("profiles");
+//        for (int i = 0; i < profiles.size(); ++i) {
+//            JSONObject profile = profiles.getJSONObject(i);
+//            JSONObject user = profile.getJSONObject("user");
+//            JSONArray servers = profile.getJSONArray("servers");
+//            for (int j = 0; j < servers.size(); ++j) {
+//                JSONObject server = servers.getJSONObject(j);
+//                Map<String, Object> clashProxy = new HashMap<>();
+//                clashProxy.put("type", "mieru");
+//                clashProxy.put("server", server.get("ipAddress"));
+//                clashProxy.put("port", server.getJSONArray("portBindings").getJSONObject(0).get("port"));
+//                clashProxy.put("username", user.get("name"));
+//                clashProxy.put("password", user.get("password"));
+//                proxies.add(clashProxy);
+//            }
+//        }
+//        return proxies;
+//    }),
+//    juicity(resp -> {
+//        List<Map<String, Object>> proxies = new ArrayList<>();
+//        JSONObject jsonObject = JSONObject.parseObject(resp);
+//        Map<String, Object> clashProxy = new HashMap<>();
+//        String[] server = jsonObject.getString("server").split(":");
+//        clashProxy.put("type", "juicity");
+//        clashProxy.put("server", server[0]);
+//        clashProxy.put("port", server[1]);
+//        clashProxy.put("uuid", jsonObject.get("uuid"));
+//        clashProxy.put("password", jsonObject.get("password"));
+//        clashProxy.put("sni", jsonObject.get("sni"));
+//        clashProxy.put("skip-cert-verify", jsonObject.get("allow_insecure"));
+//        clashProxy.put("congestion-control", jsonObject.get("congestion_control"));
+//        proxies.add(clashProxy);
+//        return proxies;
+//    }),
+//    naiveproxy(resp -> {
+//        JSONObject jsonObject = JSONObject.parseObject(resp);
+//        Map<String, Object> clashProxy = new HashMap<>();
+//        String proxy = jsonObject.getString("proxy");
+//        String[] split = proxy.split("@");
+//        String[] user = split[0].split(":");
+//        String[] server = split[1].split(":");
+//        clashProxy.put("type", "naiveproxy");
+//        clashProxy.put("server", server[0]);
+//        clashProxy.put("port", server[1]);
+//        clashProxy.put("username", user[1].substring(2));
+//        clashProxy.put("password", user[2]);
+//        return Collections.singletonList(clashProxy);
+//    });
 
-    public final Converter converter;
+    public final Function<String, List<Map<String, Object>>> function;
 }
