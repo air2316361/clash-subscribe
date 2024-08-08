@@ -5,7 +5,9 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.ds.tech.subscribe.config.Client;
 import com.ds.tech.subscribe.config.ObjectMapperHolder;
+import com.ds.tech.subscribe.controller.SubscribeController;
 import com.ds.tech.subscribe.entity.Clash;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -39,13 +41,13 @@ public class WebsiteSchedule {
     private void init() {
         proxyJson = JSON.parseObject(proxyConfig.trim());
         ObjectMapperHolder.setObjectMapper(objectMapper);
+        clashTemplate.reset();
         schedule();
     }
 
     @Scheduled(cron = "0 0/10 * * * ?")
     public void schedule() {
         restTemplate.getForObject("https://" + domain, String.class);
-        clashTemplate.reset();
         Set<String> set = new HashSet<>();
         proxyJson.forEach((key, value) -> {
             JSONArray jsonArray = (JSONArray) value;
@@ -63,6 +65,14 @@ public class WebsiteSchedule {
             proxy.put("name", proxyName);
         }
         clashTemplate.groupPadding();
+        String proxyConfig;
+        try {
+            proxyConfig = objectMapper.writeValueAsString(clashTemplate);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        SubscribeController.setProxyConfig(proxyConfig);
+        clashTemplate.reset();
     }
 
     private void request(String key, Object o, Set<String> set) {
