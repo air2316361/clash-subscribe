@@ -42,12 +42,16 @@ public class WebsiteSchedule {
         proxyJson = JSON.parseObject(proxyConfig.trim());
         ObjectMapperHolder.setObjectMapper(objectMapper);
         clashTemplate.reset();
-        schedule();
+        refreshSubscribe();
     }
 
     @Scheduled(cron = "0 0/10 * * * ?")
     public void schedule() {
         restTemplate.getForObject("https://" + domain, String.class);
+        refreshSubscribe();
+    }
+
+    private void refreshSubscribe() {
         Set<String> set = new HashSet<>();
         proxyJson.forEach((key, value) -> {
             JSONArray jsonArray = (JSONArray) value;
