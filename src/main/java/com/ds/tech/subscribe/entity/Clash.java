@@ -34,6 +34,6 @@ public class Clash {
         selectNames.add("♻️ 自动选择");
         selectNames.add("DIRECT");
         selectNames.addAll(proxyNames);
-        autoSelect.setProxies(selectNames);
+        proxySelect.setProxies(selectNames);
     }
 }
