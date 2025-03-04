@@ -18,14 +18,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.InputStream;
 import java.util.*;
 
 @Component
 @Slf4j
 public class WebsiteSchedule {
 
-    public static Clash clashTemplate;
-    public static boolean templateNeedUpdate = true;
     public static Map<String, Integer> indexMap = new HashMap<>();
     public static Set<String> proxySet = new HashSet<>();
 
@@ -38,11 +37,17 @@ public class WebsiteSchedule {
     private JSONObject proxyJson;
     @Value("${DOMAIN:grf.cloudns.org}")
     private String domain;
+    private Clash clashTemplate;
 
     @PostConstruct
     private void init() {
         proxyJson = JSON.parseObject(proxyConfig.trim());
         ObjectMapperHolder.setObjectMapper(objectMapper);
+        try (InputStream inputStream = WebsiteSchedule.class.getClassLoader().getResourceAsStream("template.yml")) {
+            clashTemplate = objectMapper.readValue(new String(inputStream.readAllBytes()), Clash.class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         refreshSubscribe();
     }
 
@@ -54,7 +59,6 @@ public class WebsiteSchedule {
     }
 
     private void refreshSubscribe() {
-        templateNeedUpdate = true;
         indexMap.clear();
         proxySet.clear();
         List<Map<String, Object>> proxies = new ArrayList<>();

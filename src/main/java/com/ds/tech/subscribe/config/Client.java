@@ -16,10 +16,6 @@ public enum Client {
         try {
             int index = WebsiteSchedule.indexMap.computeIfAbsent("Clash.Meta", s -> 1);
             Clash clash = ObjectMapperHolder.getObjectMapper().readValue(resp, Clash.class);
-            if (WebsiteSchedule.templateNeedUpdate) {
-                WebsiteSchedule.clashTemplate = clash;
-                WebsiteSchedule.templateNeedUpdate = false;
-            }
             for (Iterator<Map<String, Object>> iterator = clash.getProxies().iterator(); iterator.hasNext(); ) {
                 Map<String, Object> proxy = iterator.next();
                 String key = proxy.get("server") + "|" + proxy.get("type");
