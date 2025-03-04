@@ -11,26 +11,28 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Component
+@Slf4j
 public class WebsiteSchedule {
+
+    public static Clash clashTemplate;
+    public static boolean templateNeedUpdate = true;
+    public static Map<String, Integer> indexMap = new HashMap<>();
+    public static Set<String> proxySet = new HashSet<>();
 
     @Resource
     private ObjectMapper objectMapper;
     @Resource
     private RestTemplate restTemplate;
-    @Resource(name = "clashTemplate")
-    private Clash clashTemplate;
     @Value("${PROXY_CONFIG:{}}")
     private String proxyConfig;
     private JSONObject proxyJson;
@@ -41,33 +43,27 @@ public class WebsiteSchedule {
     private void init() {
         proxyJson = JSON.parseObject(proxyConfig.trim());
         ObjectMapperHolder.setObjectMapper(objectMapper);
-        clashTemplate.reset();
         refreshSubscribe();
     }
 
     @Scheduled(cron = "0 0/10 * * * ?")
     public void schedule() {
-        restTemplate.getForObject("https://" + domain, String.class);
+        String s = restTemplate.getForObject("https://" + domain, String.class);
+        log.info(s);
         refreshSubscribe();
     }
 
     private void refreshSubscribe() {
-        Set<String> set = new HashSet<>();
+        templateNeedUpdate = true;
+        indexMap.clear();
+        proxySet.clear();
+        List<Map<String, Object>> proxies = new ArrayList<>();
         proxyJson.forEach((key, value) -> {
             JSONArray jsonArray = (JSONArray) value;
-            jsonArray.forEach(urls -> request(key, urls, set));
+            jsonArray.forEach(urls -> request(key, urls, proxies));
         });
-        List<Map<String, Object>> proxies = clashTemplate.getProxies();
-        proxies.sort((o1, o2) -> {
-            int result = o1.get("server").toString().compareTo(o2.get("server").toString());
-            return result == 0 ? Integer.parseInt(o1.get("port").toString()) - Integer.parseInt(o2.get("port").toString()) : result;
-        });
-        int index = 0;
-        for (Map<String, Object> proxy : proxies) {
-            ++index;
-            String proxyName = "IP_" + index;
-            proxy.put("name", proxyName);
-        }
+        proxies.sort(Comparator.comparing(o -> o.get("name").toString()));
+        clashTemplate.setProxies(proxies);
         clashTemplate.groupPadding();
         String proxyConfig;
         try {
@@ -76,10 +72,9 @@ public class WebsiteSchedule {
             throw new RuntimeException(e);
         }
         SubscribeController.setProxyConfig(proxyConfig);
-        clashTemplate.reset();
     }
 
-    private void request(String key, Object o, Set<String> set) {
+    private void request(String key, Object o, List<Map<String, Object>> proxies) {
         if (!(o instanceof JSONArray urls)) {
             return;
         }
@@ -92,12 +87,12 @@ public class WebsiteSchedule {
         } catch (IllegalArgumentException e) {
             return;
         }
-        if (!convert(urls.getString(0), client, clashTemplate.getProxies(), set) && urls.size() > 1) {
-            convert(urls.getString(1), client, clashTemplate.getProxies(), set);
+        if (!convert(urls.getString(0), client, proxies) && urls.size() > 1) {
+            convert(urls.getString(1), client, proxies);
         }
     }
 
-    private boolean convert(String url, Client client, List<Map<String, Object>> proxies, Set<String> set) {
+    private boolean convert(String url, Client client, List<Map<String, Object>> proxies) {
         String resp;
         try {
             resp = restTemplate.getForObject(url, String.class);
@@ -108,14 +103,7 @@ public class WebsiteSchedule {
             return false;
         }
         List<Map<String, Object>> convertProxies = client.function.apply(resp);
-        convertProxies.forEach(proxy -> {
-            String uniqueKey = proxy.get("server") + ":" + proxy.get("port");
-            if (set.contains(uniqueKey)) {
-                return;
-            }
-            set.add(uniqueKey);
-            proxies.add(proxy);
-        });
+        proxies.addAll(convertProxies);
         return true;
     }
 }
