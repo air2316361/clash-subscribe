@@ -100,7 +100,10 @@ public enum Client {
         clashProxy.put("sni", proxy.get("server_name"));
         clashProxy.put("skip-cert-verify", proxy.get("disable_mtu_discovery"));
         clashProxy.put("protocol", proxy.get("protocol"));
-        clashProxy.put("alpn", Collections.singletonList(proxy.get("alpn")));
+        Object alpn = proxy.get("alpn");
+        if (alpn != null) {
+            clashProxy.put("alpn", Collections.singletonList(alpn));
+        }
         clashProxy.put("recv-window-conn", proxy.get("recv_window_conn"));
         clashProxy.put("recv-window", proxy.get("recv_window"));
         WebsiteSchedule.indexMap.put("Hysteria", ++index);
