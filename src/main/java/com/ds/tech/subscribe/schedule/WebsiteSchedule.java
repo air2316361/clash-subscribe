@@ -107,6 +107,10 @@ public class WebsiteSchedule {
             return false;
         }
         List<Map<String, Object>> convertProxies = client.function.apply(resp);
+        convertProxies.forEach(proxy -> {
+            proxy.put("up", "11 Mbps");
+            proxy.put("down", "55 Mbps");
+        });
         proxies.addAll(convertProxies);
         return true;
     }

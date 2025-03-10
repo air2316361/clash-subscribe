@@ -100,8 +100,6 @@ public enum Client {
         clashProxy.put("sni", proxy.get("server_name"));
         clashProxy.put("skip-cert-verify", proxy.get("disable_mtu_discovery"));
         clashProxy.put("protocol", proxy.get("protocol"));
-        clashProxy.put("up", proxy.get("up_mbps"));
-        clashProxy.put("down", proxy.get("down_mbps"));
         clashProxy.put("alpn", Collections.singletonList(proxy.get("alpn")));
         clashProxy.put("recv-window-conn", proxy.get("recv_window_conn"));
         clashProxy.put("recv-window", proxy.get("recv_window"));
@@ -158,8 +156,6 @@ public enum Client {
             JSONObject tls = proxy.getJSONObject("tls");
             clashProxy.put("sni", tls.get("server_name"));
             clashProxy.put("alpn", tls.get("alpn"));
-            clashProxy.put("up", proxy.get("up_mbps") + " Mbps");
-            clashProxy.put("down", proxy.get("down_mbps") + " Mbps");
             clashProxy.put("skip-cert-verify", true);
             ++index;
             proxies.add(clashProxy);
