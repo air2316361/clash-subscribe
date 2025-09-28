@@ -43,7 +43,7 @@ export default async function(env) {
 			if (key.expiration >= minExpiration) {
 				continue;
 			}
-			converter = await getConverter(keyName);
+			converter = getConverter(keyName);
 			if (!converter) {
 				continue;
 			}
@@ -54,12 +54,19 @@ export default async function(env) {
 	if (!updateKey || !converter) {
 		return;
 	}
-	console.log('updating ' + updateKey);
-	const res = await request(urls);
-	await kv.put(updateKey, JSON.stringify(converter(res)), {
-		expirationTtl: 1800
+	request(urls).then(res => {
+		console.log(res);
+		if (!res) {
+			return;
+		}
+		kv.put(updateKey, JSON.stringify(converter(res)), {
+			expirationTtl: 1800
+		});
+		console.log('updated ' + updateKey);
 	});
-	await generateProxy(kv);
+	setTimeout(() => {
+		generateProxy(kv);
+	}, 3000);
 }
 
 function foreachConfig(env, handler) {
