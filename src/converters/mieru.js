@@ -9,7 +9,7 @@ export default function(data) {
 				"type": "mieru",
 				"server": server.ipAddress,
 				"port": server.portBindings[0].port,
-				"transport": "tcp",
+				"transport": "TCP",
 				"username": user.name,
 				"password": user.password
 			});
