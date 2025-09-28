@@ -18,17 +18,20 @@ export default async function(env) {
 	let updateKey = undefined;
 	let converter = undefined;
 	let urls = undefined;
-	foreachConfig(env, (key, value) => {
-		if (keySet.has(key)) {
-			return;
+	for (const envName of env.ENV_NAMES) {
+		const config = env[envName];
+		for (const key in config) {
+			if (keySet.has(key)) {
+				continue;
+			}
+			converter = getConverter(key);
+			if (converter) {
+				updateKey = key;
+				urls = config[key];
+				break;
+			}
 		}
-		converter = getConverter(key);
-		if (converter) {
-			updateKey = key;
-			urls = value;
-			return true;
-		}
-	});
+	}
 	if (!updateKey) {
 		if (list.length === 0) {
 			return;
