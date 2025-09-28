@@ -129,6 +129,8 @@ async function generateProxy(kv, updateKey, updateProxy) {
 			keyNameSerials.set(keyName, serial);
 			const proxyName = keyName + '_' + serial;
 			proxy.name = proxyName;
+			proxy.up = "20 Mbps";
+			proxy.down = "80 Mbps";
 			proxyConfig.proxies.push(proxy);
 			proxyGroups.forEach(group => {
 				group.proxies.push(proxyName);
