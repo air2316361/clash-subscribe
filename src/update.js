@@ -58,11 +58,11 @@ export default async function(env) {
 	if (!res) {
 		return;
 	}
-	await kv.put(updateKey, JSON.stringify(converter(res)), {
+	const updateProxy = converter(res);
+	await kv.put(updateKey, JSON.stringify(updateProxy), {
 		expirationTtl: 1800
 	});
-	await wait(500);
-	await generateProxy(kv);
+	await generateProxy(kv, updateKey, updateProxy);
 }
 
 function foreachConfig(env, handler) {
@@ -74,10 +74,6 @@ function foreachConfig(env, handler) {
 			}
 		}
 	}
-}
-
-function wait(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function request(urls) {
@@ -97,7 +93,7 @@ async function request(urls) {
 	return result;
 }
 
-async function generateProxy(kv) {
+async function generateProxy(kv, updateKey, updateProxy) {
 	const proxyConfig = { ...template };
 	proxyConfig.proxies = [];
 	const proxyGroups = proxyConfig['proxy-groups'];
@@ -108,12 +104,15 @@ async function generateProxy(kv) {
 	const list = await kv.list();
 	for (const key of list.keys) {
 		const keyName = key.name;
+		let proxies
 		if (keyName === proxyKey) {
 			continue;
+		} else if (keyName === updateKey) {
+			proxies = updateProxy;
+		} else {
+			const proxyStr = await kv.get(keyName);
+			proxies = JSON.parse(proxyStr);
 		}
-		const proxyStr = await kv.get(keyName);
-		const proxies = JSON.parse(proxyStr);
-		console.log(proxies);
 		for (const proxy of proxies) {
 			const serverName = proxy.server + '|' + proxy.port;
 			if (servers.has(serverName)) {
