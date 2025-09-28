@@ -134,7 +134,7 @@ async function generateProxy(kv) {
 			});
 		}
 	}
-	await kv.put(proxyKey, yaml.dump(proxyConfig), {
+	kv.put(proxyKey, yaml.dump(proxyConfig), {
 		expirationTtl: 360
 	});
 }
