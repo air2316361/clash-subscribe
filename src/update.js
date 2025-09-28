@@ -112,6 +112,9 @@ async function generateProxy(kv, updateKey, updateProxy) {
 			proxies = updateProxy;
 		} else {
 			const proxyStr = await kv.get(keyName);
+			if (!proxyStr || !proxyStr.length) {
+				continue;
+			}
 			proxies = JSON.parse(proxyStr);
 		}
 		for (const proxy of proxies) {
