@@ -63,7 +63,7 @@ export default async function(env) {
 		expirationTtl: 1800
 	});
 	console.log("updated: " + updateKey);
-	await generateProxy(kv, updateKey, updateProxy);
+	await generateProxy(env, updateKey, updateProxy);
 }
 
 function foreachConfig(env, handler) {
@@ -94,7 +94,7 @@ async function request(urls) {
 	return result;
 }
 
-async function generateProxy(kv, updateKey, updateProxy) {
+async function generateProxy(env, updateKey, updateProxy) {
 	const proxyConfig = { ...template };
 	proxyConfig.proxies = [];
 	const proxyGroups = proxyConfig['proxy-groups'];
@@ -102,7 +102,7 @@ async function generateProxy(kv, updateKey, updateProxy) {
 	proxyGroups[1].proxies = [];
 	const servers = new Set();
 	const keyNameSerials = new Map();
-	const list = await kv.list();
+	const list = await env.kv.list();
 	for (const key of list.keys) {
 		const keyName = key.name;
 		let proxies
@@ -111,7 +111,7 @@ async function generateProxy(kv, updateKey, updateProxy) {
 		} else if (keyName === updateKey) {
 			proxies = updateProxy;
 		} else {
-			const proxyStr = await kv.get(keyName);
+			const proxyStr = await env.kv.get(keyName);
 			if (!proxyStr || !proxyStr.length) {
 				continue;
 			}
@@ -140,7 +140,7 @@ async function generateProxy(kv, updateKey, updateProxy) {
 			});
 		}
 	}
-	await kv.put(proxyKey, yaml.dump(proxyConfig), {
+	await env.kv.put(proxyKey, yaml.dump(proxyConfig), {
 		expirationTtl: 360
 	});
 }
