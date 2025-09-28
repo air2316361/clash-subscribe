@@ -62,6 +62,7 @@ export default async function(env) {
 	await kv.put(updateKey, JSON.stringify(updateProxy), {
 		expirationTtl: 1800
 	});
+	console.log("updated: " + updateKey);
 	await generateProxy(kv, updateKey, updateProxy);
 }
 
