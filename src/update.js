@@ -68,17 +68,6 @@ export default async function(env) {
 	await generateProxy(env, updateKey, updateProxy);
 }
 
-function foreachConfig(env, handler) {
-	for (const envName of env.ENV_NAMES) {
-		const config = env[envName];
-		for (const key in config) {
-			if (handler(key, config[key])) {
-				return;
-			}
-		}
-	}
-}
-
 async function request(urls) {
 	let result = undefined;
 	try {
