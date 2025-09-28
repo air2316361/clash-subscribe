@@ -6,8 +6,7 @@ import getConverter from './converter';
 import proxyKey from './proxy_key';
 
 export default async function(env) {
-	const kv = env.KV;
-	const list = await kv.list();
+	const list = await env.KV.list();
 	const keySet = new Set();
 	for (const key of list.keys) {
 		const keyName = key.name;
@@ -59,7 +58,7 @@ export default async function(env) {
 		return;
 	}
 	const updateProxy = converter(res);
-	await kv.put(updateKey, JSON.stringify(updateProxy), {
+	await env.KV.put(updateKey, JSON.stringify(updateProxy), {
 		expirationTtl: 1800
 	});
 	console.log("updated: " + updateKey);
@@ -102,7 +101,7 @@ async function generateProxy(env, updateKey, updateProxy) {
 	proxyGroups[1].proxies = [];
 	const servers = new Set();
 	const keyNameSerials = new Map();
-	const list = await env.kv.list();
+	const list = await env.KV.list();
 	for (const key of list.keys) {
 		const keyName = key.name;
 		let proxies
@@ -111,7 +110,7 @@ async function generateProxy(env, updateKey, updateProxy) {
 		} else if (keyName === updateKey) {
 			proxies = updateProxy;
 		} else {
-			const proxyStr = await env.kv.get(keyName);
+			const proxyStr = await env.KV.get(keyName);
 			if (!proxyStr || !proxyStr.length) {
 				continue;
 			}
@@ -140,7 +139,7 @@ async function generateProxy(env, updateKey, updateProxy) {
 			});
 		}
 	}
-	await env.kv.put(proxyKey, yaml.dump(proxyConfig), {
+	await env.KV.put(proxyKey, yaml.dump(proxyConfig), {
 		expirationTtl: 360
 	});
 }
