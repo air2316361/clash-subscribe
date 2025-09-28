@@ -16,7 +16,7 @@ export default function(data) {
 				"type": protocol,
 				"server": address,
 				"port": vnext.port,
-				"username": user.id,
+				"uuid": user.id,
 				"network": streamSettings.network,
 				"tls": true,
 				"flow": user.flow,
