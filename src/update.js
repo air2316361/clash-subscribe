@@ -6,7 +6,6 @@ import getConverter from './converter';
 import proxyKey from './proxy_key';
 
 export default async function(env) {
-	const config = env.PROXY_CONFIG;
 	const kv = env.KV;
 	const list = await kv.list();
 	const keySet = new Set();
@@ -19,16 +18,18 @@ export default async function(env) {
 	}
 	let updateKey = undefined;
 	let converter = undefined;
-	for (const key in config) {
+	let urls = undefined;
+	foreachConfig(env, (key, value) => {
 		if (keySet.has(key)) {
-			continue;
+			return;
 		}
-		converter = await getConverter(key);
+		converter = getConverter(key);
 		if (converter) {
 			updateKey = key;
-			break;
+			urls = value;
+			return true;
 		}
-	}
+	});
 	if (!updateKey) {
 		if (list.length === 0) {
 			return;
@@ -53,12 +54,23 @@ export default async function(env) {
 	if (!updateKey || !converter) {
 		return;
 	}
-	console.log("updating " + updateKey);
-	const res = await request(config[updateKey]);
+	console.log('updating ' + updateKey);
+	const res = await request(urls);
 	await kv.put(updateKey, JSON.stringify(converter(res)), {
 		expirationTtl: 1800
 	});
 	await generateProxy(kv);
+}
+
+function foreachConfig(env, handler) {
+	for (const envName of env.ENV_NAMES) {
+		const config = env[envName];
+		for (const key in config) {
+			if (handler(key, config[key])) {
+				return;
+			}
+		}
+	}
 }
 
 async function request(urls) {
@@ -82,9 +94,10 @@ async function generateProxy(kv) {
 	const proxyConfig = { ...template };
 	proxyConfig.proxies = [];
 	const proxyGroups = proxyConfig['proxy-groups'];
-	proxyGroups[0].proxies = ["♻️ 自动选择", "DIRECT"];
+	proxyGroups[0].proxies = ['♻️ 自动选择', 'DIRECT'];
 	proxyGroups[1].proxies = [];
 	const servers = new Set();
+	const keyNameSerials = new Map();
 	const list = await kv.list();
 	for (const key of list.keys) {
 		const keyName = key.name;
@@ -94,15 +107,23 @@ async function generateProxy(kv) {
 		const proxyStr = await kv.get(keyName);
 		const proxies = JSON.parse(proxyStr);
 		for (const proxy of proxies) {
-			const serverName = proxy.server + "|" + proxy.port;
+			const serverName = proxy.server + '|' + proxy.port;
 			if (servers.has(serverName)) {
 				continue;
 			}
 			servers.add(serverName);
-			proxy.name = keyName;
+			let serial = keyNameSerials.get(keyName);
+			if (serial) {
+				++serial;
+			} else {
+				serial = 1;
+			}
+			keyNameSerials.set(keyName, serial);
+			const proxyName = keyName + '_' + serial;
+			proxy.name = proxyName;
 			proxyConfig.proxies.push(proxy);
 			proxyGroups.forEach(group => {
-				group.proxies.push(serverName);
+				group.proxies.push(proxyName);
 			});
 		}
 	}

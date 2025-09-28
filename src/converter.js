@@ -5,7 +5,7 @@ import hysteria2 from './converters/hysteria2';
 import singbox from './converters/singbox';
 import mieru from './converters/mieru';
 
-export default async function(key) {
+export default function(key) {
 	const method = key.substring(0, key.indexOf('_'));
 	switch (method) {
 		case 'clashmeta':
