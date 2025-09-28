@@ -54,19 +54,15 @@ export default async function(env) {
 	if (!updateKey || !converter) {
 		return;
 	}
-	request(urls).then(res => {
-		console.log(res);
-		if (!res) {
-			return;
-		}
-		kv.put(updateKey, JSON.stringify(converter(res)), {
-			expirationTtl: 1800
-		});
-		console.log('updated ' + updateKey);
+	const res = await request(urls);
+	if (!res) {
+		return;
+	}
+	await kv.put(updateKey, JSON.stringify(converter(res)), {
+		expirationTtl: 1800
 	});
-	setTimeout(() => {
-		generateProxy(kv);
-	}, 3000);
+	await wait(3000);
+	await generateProxy(kv);
 }
 
 function foreachConfig(env, handler) {
@@ -78,6 +74,10 @@ function foreachConfig(env, handler) {
 			}
 		}
 	}
+}
+
+function wait(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function request(urls) {
@@ -134,7 +134,7 @@ async function generateProxy(kv) {
 			});
 		}
 	}
-	kv.put(proxyKey, yaml.dump(proxyConfig), {
+	await kv.put(proxyKey, yaml.dump(proxyConfig), {
 		expirationTtl: 360
 	});
 }
