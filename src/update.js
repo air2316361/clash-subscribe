@@ -113,6 +113,7 @@ async function generateProxy(kv) {
 		}
 		const proxyStr = await kv.get(keyName);
 		const proxies = JSON.parse(proxyStr);
+		console.log(proxies);
 		for (const proxy of proxies) {
 			const serverName = proxy.server + '|' + proxy.port;
 			if (servers.has(serverName)) {
