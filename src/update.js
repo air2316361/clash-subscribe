@@ -103,8 +103,13 @@ async function generateProxy(env, updateKey, updateProxy) {
 		} else if (keyName === updateKey) {
 			proxies = updateProxy;
 		} else {
-			const proxyStr = await env.KV.get(keyName);
-			if (!proxyStr || !proxyStr.length) {
+			let proxyStr;
+			try {
+				proxyStr = await env.KV.get(keyName);
+			} catch (err) {
+				console.error(err);
+			}
+			if (!proxyStr || proxyStr.length === 0) {
 				continue;
 			}
 			proxies = JSON.parse(proxyStr);
