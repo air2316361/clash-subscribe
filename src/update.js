@@ -9,6 +9,7 @@ export default async function(env) {
 	const list = await env.KV.list();
 	const keySet = new Set();
 	for (const key of list.keys) {
+		console.log(key);
 		const keyName = key.name;
 		if (keyName === proxyKey) {
 			continue;
