@@ -110,7 +110,7 @@ async function generateProxy(env, updateKey, updateProxy) {
 				console.error(err);
 			}
 			if (!proxyStr || proxyStr.length === 0) {
-				continue;
+				return;
 			}
 			proxies = JSON.parse(proxyStr);
 		}
