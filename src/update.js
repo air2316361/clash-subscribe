@@ -94,6 +94,13 @@ async function generateProxy(env, updateKey, updateProxy) {
 	proxyGroups[1].proxies = [];
 	const servers = new Set();
 	const keyNameSerials = new Map();
+	const lastData = await env.KV.get(proxyKey);
+	const proxyTemp = {};
+	if (lastData && lastData.length > 0) {
+		JSON.parse(lastData).proxies.forEach(proxy => {
+			proxyTemp[proxy.name] = proxy;
+		});
+	}
 	const list = await env.KV.list();
 	for (const key of list.keys) {
 		const keyName = key.name;
@@ -103,14 +110,27 @@ async function generateProxy(env, updateKey, updateProxy) {
 		} else if (keyName === updateKey) {
 			proxies = updateProxy;
 		} else {
-			let proxyStr;
-			try {
-				proxyStr = await env.KV.get(keyName);
-			} catch (err) {
-				console.error(err);
-			}
+			const proxyStr = await env.KV.get(keyName);
 			if (!proxyStr || proxyStr.length === 0) {
-				return;
+				let serial = 0;
+				while (true) {
+					++serial;
+					const proxyName = keyName + '_' + serial;
+					const proxy = proxyTemp[proxyName];
+					if (!proxy) {
+						break;
+					}
+					const serverName = proxy.server + '|' + proxy.port;
+					if (servers.has(serverName)) {
+						continue;
+					}
+					servers.add(serverName);
+					proxyConfig.proxies.push(proxy);
+					proxyGroups.forEach(group => {
+						group.proxies.push(proxyName);
+					});
+				}
+				continue;
 			}
 			proxies = JSON.parse(proxyStr);
 		}
