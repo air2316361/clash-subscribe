@@ -86,11 +86,28 @@ async function request(urls) {
 }
 
 async function generateProxy(env, updateKey, updateProxy) {
-	const proxyConfig = { ...template };
-	proxyConfig.proxies = [];
-	const proxyGroups = proxyConfig['proxy-groups'];
-	proxyGroups[0].proxies = ['♻️ 自动选择', 'DIRECT'];
-	proxyGroups[1].proxies = [];
+	const proxyConfig = {
+		...template,
+		"proxies": [],
+		'proxy-groups': [
+			{
+				"name": "🚀 节点选择",
+				"type": "select",
+				"proxies": [
+					"♻️ 自动选择",
+					"DIRECT"
+				]
+			},
+			{
+				"name": "♻️ 自动选择",
+				"type": "url-test",
+				"url": "https://www.gstatic.com/generate_204",
+				"interval": 300,
+				"tolerance": 50,
+				"proxies": []
+			}
+		]
+	};
 	const servers = new Set();
 	const keyNameSerials = new Map();
 	const lastData = await env.KV.get(proxyKey);
@@ -151,12 +168,12 @@ async function generateProxy(env, updateKey, updateProxy) {
 			proxy.up = "20 Mbps";
 			proxy.down = "80 Mbps";
 			proxyConfig.proxies.push(proxy);
-			proxyGroups.forEach(group => {
+			proxyConfig['proxy-groups'].forEach(group => {
 				group.proxies.push(proxyName);
 			});
 		}
 	}
 	await env.KV.put(proxyKey, yaml.dump(proxyConfig), {
-		expirationTtl: 360
+		expirationTtl: 3600
 	});
 }
