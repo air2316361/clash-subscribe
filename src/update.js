@@ -96,7 +96,7 @@ async function generateProxy(env, updateKey, updateProxy) {
 	const lastData = await env.KV.get(proxyKey);
 	const proxyTemp = {};
 	if (lastData && lastData.length > 0) {
-		JSON.parse(lastData).proxies.forEach(proxy => {
+		yaml.load(lastData).proxies.forEach(proxy => {
 			proxyTemp[proxy.name] = proxy;
 		});
 	}
