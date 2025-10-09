@@ -142,7 +142,7 @@ async function generateProxy(env, updateKey, updateProxy) {
 					}
 					servers.add(serverName);
 					proxyConfig.proxies.push(proxy);
-					proxyGroups.forEach(group => {
+					proxyConfig["proxy-groups"].forEach(group => {
 						group.proxies.push(proxyName);
 					});
 				}
