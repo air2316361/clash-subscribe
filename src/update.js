@@ -111,21 +111,28 @@ async function generateProxy(env, updateKey, updateProxy) {
 	const servers = new Set();
 	const keyNameSerials = new Map();
 	const lastData = await env.KV.get(proxyKey);
+	// 缓存上一次的
 	const proxyTemp = {};
 	if (lastData && lastData.length > 0) {
 		yaml.load(lastData).proxies.forEach(proxy => {
-			proxyTemp[proxy.name] = proxy;
+			let proxyName = proxy.name;
+			proxyName = proxyName.substring(proxyName.indexOf(')') + 1);
+			proxyTemp[proxyName] = proxy;
 		});
 	}
+	// 遍历KV中所有key
 	const list = await env.KV.list();
 	for (const key of list.keys) {
 		const keyName = key.name;
 		let proxies
 		if (keyName === proxyKey) {
+			// key为最终结果，直接跳过
 			continue;
 		} else if (keyName === updateKey) {
+			// key为要更新的key
 			proxies = updateProxy;
 		} else {
+			// key为不需要更新的key，直接从上一次缓存中拿
 			const proxyStr = await env.KV.get(keyName);
 			if (!proxyStr || proxyStr.length === 0) {
 				let serial = 0;
@@ -150,9 +157,8 @@ async function generateProxy(env, updateKey, updateProxy) {
 			}
 			proxies = JSON.parse(proxyStr);
 		}
-		let index = 0;
+		// 组装结果
 		for (const proxy of proxies) {
-			++index;
 			const serverName = proxy.server + '|' + proxy.port;
 			if (servers.has(serverName)) {
 				continue;
@@ -165,7 +171,7 @@ async function generateProxy(env, updateKey, updateProxy) {
 				serial = 1;
 			}
 			keyNameSerials.set(keyName, serial);
-			const proxyName = keyName + '_' + serial + '(' + index + ')';
+			const proxyName = keyName + '_' + serial;
 			proxy.name = proxyName;
 			proxy.up = "20 Mbps";
 			proxy.down = "80 Mbps";
@@ -173,6 +179,14 @@ async function generateProxy(env, updateKey, updateProxy) {
 			proxyConfig['proxy-groups'].forEach(group => {
 				group.proxies.push(proxyName);
 			});
+		}
+	}
+	// 标注序号
+	for (let i = 0; i < proxyConfig.proxies.length; ++i) {
+		const name = '(' + (i + 1) + ')' + proxyConfig.proxies[i].name;
+		proxyConfig.proxies[i].name = name;
+		for (let j = 0; i < proxyConfig['proxy-groups'].length; ++j) {
+			proxyConfig['proxy-groups'][j].proxies[i + j] = name;
 		}
 	}
 	await env.KV.put(proxyKey, yaml.dump(proxyConfig), {
