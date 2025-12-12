@@ -150,7 +150,9 @@ async function generateProxy(env, updateKey, updateProxy) {
 			}
 			proxies = JSON.parse(proxyStr);
 		}
+		let index = 0;
 		for (const proxy of proxies) {
+			++index;
 			const serverName = proxy.server + '|' + proxy.port;
 			if (servers.has(serverName)) {
 				continue;
@@ -163,7 +165,7 @@ async function generateProxy(env, updateKey, updateProxy) {
 				serial = 1;
 			}
 			keyNameSerials.set(keyName, serial);
-			const proxyName = keyName + '_' + serial;
+			const proxyName = keyName + '_' + serial + '(' + index + ')';
 			proxy.name = proxyName;
 			proxy.up = "20 Mbps";
 			proxy.down = "80 Mbps";
