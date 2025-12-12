@@ -7,6 +7,7 @@ export default function(data) {
 			"type": proxy.type,
 			"server": proxy.server,
 			"port": proxy["server_port"],
+			"uuid": proxy.uuid,
 			"auth-str": proxy["auth_str"],
 			"obfs": proxy.obfs,
 			"sni": tls["server_name"],

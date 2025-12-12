@@ -183,7 +183,7 @@ async function generateProxy(env, updateKey, updateProxy) {
 	}
 	// 标注序号
 	for (let i = 0; i < proxyConfig.proxies.length; ++i) {
-		const name = '(' + (i + 1) + ')' + proxyConfig.proxies[i].name;
+		const name = '(' + i + ')' + proxyConfig.proxies[i].name;
 		proxyConfig.proxies[i].name = name;
 		proxyConfig['proxy-groups'][0].proxies[i + 2] = name;
 		proxyConfig['proxy-groups'][1].proxies[i] = name;
