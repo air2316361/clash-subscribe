@@ -116,7 +116,7 @@ async function generateProxy(env, updateKey, updateProxy) {
 	if (lastData && lastData.length > 0) {
 		yaml.load(lastData).proxies.forEach(proxy => {
 			let proxyName = proxy.name;
-			proxyName = proxyName.substring(proxyName.indexOf(')') + 1);
+			proxyName = proxyName.substring(proxyName.lastIndexOf(')') + 1);
 			proxyTemp[proxyName] = proxy;
 		});
 	}
