@@ -1,6 +1,8 @@
 export default function(data) {
-	const server = data.server.split(':');
-	const address = server[0];
+	const server = data.server;
+	const index = server.lastIndexOf(':');
+	const address = server.substring(0, index);
+	const port = server.substring(index + 1);
 	const proxy = {
 		"type": "hysteria",
 		"server": address,
@@ -11,7 +13,6 @@ export default function(data) {
 		"recv-window-conn": data["recv_window_conn"],
 		"recv-window": data["recv_window"],
 	}
-	const port = server[1].split(',');
 	proxy.port = port[0];
 	if (port.length > 1) {
 	} else {
