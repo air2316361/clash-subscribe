@@ -185,9 +185,8 @@ async function generateProxy(env, updateKey, updateProxy) {
 	for (let i = 0; i < proxyConfig.proxies.length; ++i) {
 		const name = '(' + (i + 1) + ')' + proxyConfig.proxies[i].name;
 		proxyConfig.proxies[i].name = name;
-		for (let j = 0; i < proxyConfig['proxy-groups'].length; ++j) {
-			proxyConfig['proxy-groups'][j].proxies[i + j] = name;
-		}
+		proxyConfig['proxy-groups'][0].proxies[i + 2] = name;
+		proxyConfig['proxy-groups'][1].proxies[i] = name;
 	}
 	await env.KV.put(proxyKey, yaml.dump(proxyConfig), {
 		expirationTtl: 3600
