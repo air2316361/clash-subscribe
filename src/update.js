@@ -71,13 +71,14 @@ export default async function(env) {
 async function request(urls) {
 	let result = undefined;
 	try {
-		console.log("request: " + urls)
+		console.log("request: " + urls[0])
 		let res = await axios.get(urls[0]);
 		if (!res || res.status !== 200) {
 			res = await axios.get(urls[1]);
 		}
 		result = res.data;
 	} catch (err) {
+		console.log("request: " + urls[1])
 		let res = await axios.get(urls[1]);
 		if (res && res.status === 200) {
 			result = res.data;
