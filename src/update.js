@@ -71,6 +71,7 @@ export default async function(env) {
 async function request(urls) {
 	let result = undefined;
 	try {
+		console.log("request: " + urls)
 		let res = await axios.get(urls[0]);
 		if (!res || res.status !== 200) {
 			res = await axios.get(urls[1]);
@@ -78,7 +79,7 @@ async function request(urls) {
 		result = res.data;
 	} catch (err) {
 		let res = await axios.get(urls[1]);
-		if (res) {
+		if (res && res.status === 200) {
 			result = res.data;
 		}
 	}
