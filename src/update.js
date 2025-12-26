@@ -3,7 +3,7 @@ import template from './template';
 import yaml from 'js-yaml';
 import getConverter from './converter';
 
-import proxyKey from './proxy_key';
+import { proxyKey } from './proxy_key';
 
 export default async function(env) {
 	const list = await env.KV.list();
@@ -56,29 +56,36 @@ export default async function(env) {
 	if (!updateKey || !converter) {
 		return;
 	}
+	const proxyStr = await env.KV.get(updateKey);
+	if (!proxyStr || proxyStr.length === 0) {
+		return;
+	}
 	const res = await request(urls);
 	if (!res) {
+		await env.KV.put(updateKey, "", {
+			expirationTtl: 3600
+		});
 		return;
 	}
 	const updateProxy = converter(res);
 	await env.KV.put(updateKey, JSON.stringify(updateProxy), {
 		expirationTtl: 3600
 	});
-	console.log("updated: " + updateKey);
+	console.log('updated: ' + updateKey);
 	await generateProxy(env, updateKey, updateProxy);
 }
 
 async function request(urls) {
 	let result = undefined;
 	try {
-		console.log("request: " + urls[0])
+		console.log('request: ' + urls[0]);
 		let res = await axios.get(urls[0]);
 		if (!res || res.status !== 200) {
 			res = await axios.get(urls[1]);
 		}
 		result = res.data;
 	} catch (err) {
-		console.log("request: " + urls[1])
+		console.log('request: ' + urls[1]);
 		let res = await axios.get(urls[1]);
 		if (res && res.status === 200) {
 			result = res.data;
@@ -90,23 +97,23 @@ async function request(urls) {
 async function generateProxy(env, updateKey, updateProxy) {
 	const proxyConfig = {
 		...template,
-		"proxies": [],
+		'proxies': [],
 		'proxy-groups': [
 			{
-				"name": "🚀 节点选择",
-				"type": "select",
-				"proxies": [
-					"♻️ 自动选择",
-					"DIRECT"
+				'name': '🚀 节点选择',
+				'type': 'select',
+				'proxies': [
+					'♻️ 自动选择',
+					'DIRECT'
 				]
 			},
 			{
-				"name": "♻️ 自动选择",
-				"type": "url-test",
-				"url": "https://www.gstatic.com/generate_204",
-				"interval": 300,
-				"tolerance": 50,
-				"proxies": []
+				'name': '♻️ 自动选择',
+				'type': 'url-test',
+				'url': 'https://www.gstatic.com/generate_204',
+				'interval': 300,
+				'tolerance': 50,
+				'proxies': []
 			}
 		]
 	};
@@ -126,7 +133,7 @@ async function generateProxy(env, updateKey, updateProxy) {
 	const list = await env.KV.list();
 	for (const key of list.keys) {
 		const keyName = key.name;
-		let proxies
+		let proxies;
 		if (keyName === proxyKey) {
 			// key为最终结果，直接跳过
 			continue;
@@ -151,7 +158,7 @@ async function generateProxy(env, updateKey, updateProxy) {
 					}
 					servers.add(serverName);
 					proxyConfig.proxies.push(proxy);
-					proxyConfig["proxy-groups"].forEach(group => {
+					proxyConfig['proxy-groups'].forEach(group => {
 						group.proxies.push(proxyName);
 					});
 				}
@@ -175,8 +182,8 @@ async function generateProxy(env, updateKey, updateProxy) {
 			keyNameSerials.set(keyName, serial);
 			const proxyName = keyName + '_' + serial;
 			proxy.name = proxyName;
-			proxy.up = "20 Mbps";
-			proxy.down = "80 Mbps";
+			proxy.up = '20 Mbps';
+			proxy.down = '80 Mbps';
 			proxyConfig.proxies.push(proxy);
 			proxyConfig['proxy-groups'].forEach(group => {
 				group.proxies.push(proxyName);

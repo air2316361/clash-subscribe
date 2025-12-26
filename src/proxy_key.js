@@ -1,1 +1,1 @@
-export default 'proxy';
+export const proxyKey = 'proxy';

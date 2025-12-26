@@ -1,5 +1,5 @@
 import update from './update';
-import proxyKey from "./proxy_key";
+import { proxyKey } from './proxy_key';
 
 export default {
 	async fetch(request, env, ctx) {
