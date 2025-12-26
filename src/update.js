@@ -57,7 +57,7 @@ export default async function(env) {
 		return;
 	}
 	const proxyStr = await env.KV.get(updateKey);
-	if (!proxyStr || proxyStr.length === 0) {
+	if (proxyStr && proxyStr.length === 0) {
 		return;
 	}
 	const res = await request(urls);
