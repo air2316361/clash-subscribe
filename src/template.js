@@ -18,112 +18,125 @@ export default {
 		}
 	},
 	"rule-providers": {
-		"reject": {
-			"type": "http",
-			"behavior": "domain",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt",
-			"path": "./ruleset/reject.yaml",
-			"interval": 86400
-		},
-		"icloud": {
-			"type": "http",
-			"behavior": "domain",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/icloud.txt",
-			"path": "./ruleset/icloud.yaml",
-			"interval": 86400
-		},
-		"apple": {
-			"type": "http",
-			"behavior": "domain",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/apple.txt",
-			"path": "./ruleset/apple.yaml",
-			"interval": 86400
-		},
-		"google": {
-			"type": "http",
-			"behavior": "domain",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/google.txt",
-			"path": "./ruleset/google.yaml",
-			"interval": 86400
-		},
-		"proxy": {
-			"type": "http",
-			"behavior": "domain",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt",
-			"path": "./ruleset/proxy.yaml",
-			"interval": 86400
-		},
-		"direct": {
-			"type": "http",
-			"behavior": "domain",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt",
-			"path": "./ruleset/direct.yaml",
-			"interval": 86400
-		},
-		"private": {
-			"type": "http",
-			"behavior": "domain",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/private.txt",
-			"path": "./ruleset/private.yaml",
-			"interval": 86400
-		},
-		"gfw": {
-			"type": "http",
-			"behavior": "domain",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt",
-			"path": "./ruleset/gfw.yaml",
-			"interval": 86400
-		},
-		"tld-not-cn": {
-			"type": "http",
-			"behavior": "domain",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/tld-not-cn.txt",
-			"path": "./ruleset/tld-not-cn.yaml",
-			"interval": 86400
-		},
-		"telegramcidr": {
-			"type": "http",
-			"behavior": "ipcidr",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/telegramcidr.txt",
-			"path": "./ruleset/telegramcidr.yaml",
-			"interval": 86400
-		},
-		"cncidr": {
-			"type": "http",
-			"behavior": "ipcidr",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt",
-			"path": "./ruleset/cncidr.yaml",
-			"interval": 86400
-		},
-		"lancidr": {
-			"type": "http",
-			"behavior": "ipcidr",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/lancidr.txt",
-			"path": "./ruleset/lancidr.yaml",
-			"interval": 86400
-		},
-		"applications": {
+		"LocalAreaNetwork": {
 			"type": "http",
 			"behavior": "classical",
-			"url": "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/applications.txt",
-			"path": "./ruleset/applications.yaml",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/LocalAreaNetwork.list",
+			"path": "./ruleset/LocalAreaNetwork.yaml",
+			"interval": 86400
+		},
+		"UnBan": {
+			"type": "http",
+			"behavior": "classical",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/UnBan.list",
+			"path": "./ruleset/UnBan.yaml",
+			"interval": 86400
+		},
+		"GameServer": {
+			"type": "http",
+			"behavior": "classical",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/air2316361/rules@master/My-Direct.txt",
+			"path": "./ruleset/GameServer.yaml",
+			"interval": 86400
+		},
+		"BanAD": {
+			"type": "http",
+			"behavior": "classical",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/BanAD.list",
+			"path": "./ruleset/BanAD.yaml",
+			"interval": 86400
+		},
+		"BanProgramAD": {
+			"type": "http",
+			"behavior": "classical",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/BanProgramAD.list",
+			"path": "./ruleset/BanProgramAD.yaml",
+			"interval": 86400
+		},
+		"BanLog": {
+			"type": "http",
+			"behavior": "classical",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/air2316361/rules@master/My-Reject.txt",
+			"path": "./ruleset/BanLog.yaml",
+			"interval": 86400
+		},
+		"GoogleCN": {
+			"type": "http",
+			"behavior": "classical",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/GoogleCN.list",
+			"path": "./ruleset/GoogleCN.yaml",
+			"interval": 86400
+		},
+		"SteamCN": {
+			"type": "http",
+			"behavior": "classical",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/SteamCN.list",
+			"path": "./ruleset/SteamCN.yaml",
+			"interval": 86400
+		},
+		"Telegram": {
+			"type": "http",
+			"behavior": "classical",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Telegram.list",
+			"path": "./ruleset/Telegram.yaml",
+			"interval": 86400
+		},
+		"ProxyMedia": {
+			"type": "http",
+			"behavior": "classical",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/ProxyMedia.list",
+			"path": "./ruleset/ProxyMedia.yaml",
+			"interval": 86400
+		},
+		"ProxyLite": {
+			"type": "http",
+			"behavior": "classical",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/ProxyLite.list",
+			"path": "./ruleset/ProxyLite.yaml",
+			"interval": 86400
+		},
+		"ChinaDomain": {
+			"type": "http",
+			"behavior": "classical",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/ChinaDomain.list",
+			"path": "./ruleset/ChinaDomain.yaml",
+			"interval": 86400
+		},
+		"ChinaCompanyIp": {
+			"type": "http",
+			"behavior": "classical",
+			"format": "text",
+			"url": "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/ChinaCompanyIp.list",
+			"path": "./ruleset/ChinaCompanyIp.yaml",
 			"interval": 86400
 		}
 	},
 	"rules": [
-		"RULE-SET,applications,DIRECT",
-		"DOMAIN,clash.razord.top,DIRECT",
-		"DOMAIN,yacd.haishan.me,DIRECT",
-		"RULE-SET,private,DIRECT",
-		"RULE-SET,reject,REJECT",
-		"RULE-SET,icloud,DIRECT",
-		"RULE-SET,apple,DIRECT",
-		"RULE-SET,google,🚀 节点选择",
-		"RULE-SET,proxy,🚀 节点选择",
-		"RULE-SET,direct,DIRECT",
-		"RULE-SET,lancidr,DIRECT",
-		"RULE-SET,cncidr,DIRECT",
-		"RULE-SET,telegramcidr,🚀 节点选择",
+		"RULE-SET,LocalAreaNetwork,DIRECT",
+		"RULE-SET,UnBan,DIRECT",
+		"RULE-SET,GameServer,DIRECT",
+		"RULE-SET,BanAD,REJECT",
+		"RULE-SET,BanProgramAD,REJECT",
+		"RULE-SET,BanLog,REJECT",
+		"RULE-SET,GoogleCN,DIRECT",
+		"RULE-SET,SteamCN,DIRECT",
+		"RULE-SET,Telegram,🚀 节点选择",
+		"RULE-SET,ProxyMedia,🚀 节点选择",
+		"RULE-SET,ProxyLite,🚀 节点选择",
+		"RULE-SET,ChinaDomain,DIRECT",
+		"RULE-SET,ChinaCompanyIp,DIRECT",
 		"GEOIP,LAN,DIRECT",
 		"GEOIP,CN,DIRECT",
 		"MATCH,🚀 节点选择"
