@@ -38,7 +38,7 @@ export default {
 			"type": "http",
 			"behavior": "classical",
 			"format": "text",
-			"url": "https://cdn.jsdelivr.net/gh/air2316361/rules@master/My-Direct.txt",
+			"url": "https://cdn.jsdelivr.net/gh/air2316361/rules@master/GameServer.list",
 			"path": "./ruleset/GameServer.yaml",
 			"interval": 86400
 		},
@@ -62,7 +62,7 @@ export default {
 			"type": "http",
 			"behavior": "classical",
 			"format": "text",
-			"url": "https://cdn.jsdelivr.net/gh/air2316361/rules@master/My-Reject.txt",
+			"url": "https://cdn.jsdelivr.net/gh/air2316361/rules@master/BanLog.list",
 			"path": "./ruleset/BanLog.yaml",
 			"interval": 86400
 		},
