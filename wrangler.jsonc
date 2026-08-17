@@ -8,12 +8,12 @@
 	},
 	"vars": {
 		"ENV_NAMES": [
-			"PROXY_CONFIG_CLASHMETA",
 			"PROXY_CONFIG_HYSTERIA",
-			"PROXY_CONFIG_HYSTERIA2",
-			"PROXY_CONFIG_MIERU",
 			"PROXY_CONFIG_SINGBOX",
-			"PROXY_CONFIG_XRAY"
+			"PROXY_CONFIG_XRAY",
+			"PROXY_CONFIG_CLASHMETA",
+			"PROXY_CONFIG_MIERU",
+			"PROXY_CONFIG_HYSTERIA2"
 		],
 		"PROXY_CONFIG_CLASHMETA": {
 			"clashmeta_1": [
@@ -140,7 +140,7 @@
 	],
 	"triggers": {
 		"crons": [
-			"*/5 * * * *"
+			"*/3 * * * *"
 		]
 	}
 }
