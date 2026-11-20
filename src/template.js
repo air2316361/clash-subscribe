@@ -34,14 +34,6 @@ export default {
 			"path": "./ruleset/UnBan.yaml",
 			"interval": 86400
 		},
-		"GameServer": {
-			"type": "http",
-			"behavior": "classical",
-			"format": "text",
-			"url": "https://cdn.jsdelivr.net/gh/air2316361/rules@master/GameServer.list",
-			"path": "./ruleset/GameServer.yaml",
-			"interval": 86400
-		},
 		"BanAD": {
 			"type": "http",
 			"behavior": "classical",
@@ -56,14 +48,6 @@ export default {
 			"format": "text",
 			"url": "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/BanProgramAD.list",
 			"path": "./ruleset/BanProgramAD.yaml",
-			"interval": 86400
-		},
-		"BanLog": {
-			"type": "http",
-			"behavior": "classical",
-			"format": "text",
-			"url": "https://cdn.jsdelivr.net/gh/air2316361/rules@master/BanLog.list",
-			"path": "./ruleset/BanLog.yaml",
 			"interval": 86400
 		},
 		"GoogleCN": {

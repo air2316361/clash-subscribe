@@ -13,7 +13,8 @@
 			"PROXY_CONFIG_XRAY",
 			"PROXY_CONFIG_CLASHMETA",
 			"PROXY_CONFIG_MIERU",
-			"PROXY_CONFIG_HYSTERIA2"
+			"PROXY_CONFIG_HYSTERIA2",
+			"PROXY_CONFIG_SHADOWQUIC"
 		],
 		"PROXY_CONFIG_CLASHMETA":{
 			"clashmeta_1":[
@@ -101,6 +102,16 @@
 			"mieru_2":[
 				"https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/mieru/2/config.json",
 				"https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/mieru/2/config.json"
+			]
+		},
+		"PROXY_CONFIG_SHADOWQUIC":{
+			"shadowquic_1":[
+				"https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/shadowquic/1/client.yaml",
+				"https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/shadowquic/1/client.yaml"
+			],
+			"shadowquic_2":[
+				"https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/shadowquic/2/client.yaml",
+				"https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/shadowquic/2/client.yaml"
 			]
 		},
 		"PROXY_CONFIG_SINGBOX":{

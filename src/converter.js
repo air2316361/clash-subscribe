@@ -4,6 +4,7 @@ import hysteria from './converters/hysteria';
 import hysteria2 from './converters/hysteria2';
 import singbox from './converters/singbox';
 import mieru from './converters/mieru';
+import shadowquic from './converters/shadowquic';
 
 export default function(key) {
 	const method = key.substring(0, key.indexOf('_'));
@@ -21,6 +22,8 @@ export default function(key) {
 			return singbox;
 		case 'mieru':
 			return mieru;
+		case 'shadowquic':
+			return shadowquic;
 		default:
 			return undefined;
 	}
