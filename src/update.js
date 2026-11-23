@@ -6,9 +6,14 @@ import getConverter from './converter';
 import { proxyKey } from './proxy_key';
 
 export default async function(env) {
-	const list = await env.KV.list();
+	let list = await env.KV.list();
+	const allKeys = [...list.keys];
+	while (!list.list_complete) {
+		list = await env.KV.list({ cursor: list.cursor });
+		allKeys.push(...list.keys);
+	}
 	const keySet = new Set();
-	for (const key of list.keys) {
+	for (const key of allKeys) {
 		const keyName = key.name;
 		if (keyName === proxyKey) {
 			continue;
@@ -25,39 +30,40 @@ export default async function(env) {
 				continue;
 			}
 			converter = getConverter(key);
+			urls = config[key];
 			if (converter) {
 				updateKey = key;
-				urls = config[key];
 				break;
 			}
 		}
 	}
 	if (!updateKey) {
-		if (list.length === 0) {
+		if (allKeys.length === 0) {
 			return;
 		}
 		let minExpiration = Infinity;
-		for (const key of list.keys) {
+		for (const key of allKeys) {
 			const keyName = key.name;
 			if (keyName === proxyKey) {
 				continue;
 			}
-			if (key.expiration >= minExpiration) {
+			const exp = key.expiration === undefined ? Infinity : key.expiration;
+			if (exp >= minExpiration) {
 				continue;
 			}
 			converter = getConverter(keyName);
 			if (!converter) {
 				continue;
 			}
-			minExpiration = key.expiration;
+			minExpiration = exp;
 			updateKey = key.name;
 		}
 	}
-	if (!updateKey || !converter) {
+	if (!updateKey || !converter || !urls) {
 		return;
 	}
 	const proxyStr = await env.KV.get(updateKey);
-	if (proxyStr && proxyStr.length === 0) {
+	if (proxyStr !== null && proxyStr.length === 0) {
 		return;
 	}
 	const res = await request(urls);
@@ -72,7 +78,7 @@ export default async function(env) {
 		expirationTtl: 86400
 	});
 	console.log('updated: ' + updateKey);
-	await generateProxy(env, updateKey, updateProxy);
+	await generateProxy(env, updateKey, updateProxy, allKeys);
 }
 
 async function request(urls) {
@@ -94,7 +100,7 @@ async function request(urls) {
 	return result;
 }
 
-async function generateProxy(env, updateKey, updateProxy) {
+async function generateProxy(env, updateKey, updateProxy, allKeys) {
 	const proxyConfig = {
 		...template,
 		'proxies': [],
@@ -125,13 +131,12 @@ async function generateProxy(env, updateKey, updateProxy) {
 	if (lastData && lastData.length > 0) {
 		yaml.load(lastData).proxies.forEach(proxy => {
 			let proxyName = proxy.name;
-			proxyName = proxyName.substring(proxyName.lastIndexOf(')') + 1);
+			proxyName = proxyName.replace(/^\(\d+\)/, '');
 			proxyTemp[proxyName] = proxy;
 		});
 	}
 	// 遍历KV中所有key
-	const list = await env.KV.list();
-	for (const key of list.keys) {
+	for (const key of allKeys) {
 		const keyName = key.name;
 		let proxies;
 		if (keyName === proxyKey) {
